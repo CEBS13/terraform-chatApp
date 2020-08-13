@@ -22,6 +22,13 @@ variable "vpc_public_subnet_cidr" {
     }
 }
 
-variable "aws_sg_cidr_blocks_ingress" {
+variable "aws_sg_cidr_blocks_ingress_ssh" {
+    description = "CIDR block for ssh access"
+    default = "0.0.0.0/0"
+}
+
+
+variable "aws_sg_cidr_blocks_ingress_app" {
+    description = "CIDR block for app ingress"
     default = "0.0.0.0/0"
 }

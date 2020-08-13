@@ -58,15 +58,7 @@ resource "aws_security_group" "vpc_main_sg" {
         from_port = 22
         to_port = 22
         protocol = "tcp"
-        cidr_blocks = [var.aws_sgr_cidr_blocks_ingress]  
-    }
-
-    ingress{
-        description = "HTTP"
-        from_port = 80
-        to_port = 80 
-        protocol = "tcp"
-        cidr_blocks = [var.aws_sgr_cidr_blocks_ingress]
+        cidr_blocks = [var.aws_sgr_cidr_blocks_ingress_ssh]  
     }
 
     ingress {
@@ -74,7 +66,7 @@ resource "aws_security_group" "vpc_main_sg" {
         from_port = 5000
         to_port =  5000
         protocol = "tcp"
-        cidr_block = [var.aws_sgr_cidr_blocks_ingress]
+        cidr_block = [var.aws_sgr_cidr_blocks_ingress_app]
     }
 
     egress {
@@ -86,6 +78,25 @@ resource "aws_security_group" "vpc_main_sg" {
 
 }
 
+data "aws_launch_configuration" "config_asg" {
+    image_id = "ami-069f29849e67a8815"
+    instance_type = "t2.micro"
+    security_groups = [vpc_main_sg.id]
+
+}
+
+resource "aws_autoscaling_group" "asg_main" {
+    launch_configuration = aws_launch_configuration.example.name
+    vpc_zone_identifier = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
+    min_size = 2
+    max_size = 4
+
+    tag {
+        key = "Name"
+        value = "app-asg"
+        propagate_at_launch = true
+    }
+}
 
 
 
