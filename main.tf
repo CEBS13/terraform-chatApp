@@ -82,17 +82,28 @@ resource "aws_launch_configuration" "config_ec2" {
     image_id = "ami-0bcc094591f354be2"  
     instance_type = "t2.micro"
     security_groups = [aws_security_group.vpc_main_sg.id]
+    associate_public_ip_address = true
 
     user_data = <<-EOF
                 #!/bin/bash
-                echo "Hello, World" > index.html
-                nohup busybox httpd -f -p ${var.port_app} &
+                apt update
+                apt install software-properties-common
+                apt-get upgrade -y
+                apt-add-repository --yes --update ppa:ansible/ansible
+                apt install python3.8 --yes
+                apt install git --yes
+                apt install ansible --yes
+                mkdir app
+                git clone git://github.com/CEBS13/node-ansible
+                cd node-ansible
+                ansible-playbook node-playbook.yml
                 EOF
 
     lifecycle {
         create_before_destroy = true
   }
 }
+
 
 resource "aws_autoscaling_group" "main_asg" {
     launch_configuration = aws_launch_configuration.config_ec2.name
