@@ -78,26 +78,25 @@ resource "aws_security_group" "vpc_main_sg" {
 
 }
 
+data "template_file" "user_data" {
+   template = file("user-data.sh")
+}
+
+
+resource "aws_key_pair" "example" {
+  key_name   = "chatApp-key"
+  public_key = file("~/chatApp-key.pub")
+}
+
+
 resource "aws_launch_configuration" "config_ec2" {
     image_id = "ami-0bcc094591f354be2"  
     instance_type = "t2.micro"
     security_groups = [aws_security_group.vpc_main_sg.id]
     associate_public_ip_address = true
-
-    user_data = <<-EOF
-                #!/bin/bash
-                apt update
-                apt install software-properties-common
-                apt-get upgrade -y
-                apt-add-repository --yes --update ppa:ansible/ansible
-                apt install python3.8 --yes
-                apt install git --yes
-                apt install ansible --yes
-                mkdir app
-                git clone git://github.com/CEBS13/node-ansible
-                cd node-ansible
-                ansible-playbook node-playbook.yml
-                EOF
+    key_name = "chatApp-key"
+    user_data = data.template_file.user_data.rendered
+  
 
     lifecycle {
         create_before_destroy = true
@@ -106,6 +105,7 @@ resource "aws_launch_configuration" "config_ec2" {
 
 
 resource "aws_autoscaling_group" "main_asg" {
+    
     launch_configuration = aws_launch_configuration.config_ec2.name
     vpc_zone_identifier = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
     
