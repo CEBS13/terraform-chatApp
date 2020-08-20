@@ -9,5 +9,5 @@ apt install ansible --yes
 cd /home/ubuntu
 mkdir /home/ubuntu/app
 git clone git://github.com/CEBS13/node-ansible
-#cd node-ansible
-#ansible-playbook node-playbook.yml
+cd node-ansible
+ansible-playbook node-playbook.yml
